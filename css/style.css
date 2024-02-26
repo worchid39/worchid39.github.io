@@ -481,7 +481,7 @@ body {
   background-color: #fff;
   color: #383838;
   font-weight: 500;
-  font-size: 17px;
+  font-size: medium;
   font-family: "Menlo", "Noto_Sans_SC", monospace;
   line-height: 1.725;
   text-rendering: geometricPrecision;
