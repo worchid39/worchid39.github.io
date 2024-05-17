@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="写在前面· 零散的学过angr，但是每次用总是会忘记用法，还得去翻大佬的博客，所以还是自己把常用的函数等记下来比较好 基本用法· 1234567891011121314151617181920212223242526272829303132333435363738import angrdef Go():    def is_good(state):        output &#x3D; state.po">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[doing]angr用法">
+<meta property="og:url" content="http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/index.html">
+<meta property="og:site_name" content="Orchid&#39;s Blog">
+<meta property="og:description" content="写在前面· 零散的学过angr，但是每次用总是会忘记用法，还得去翻大佬的博客，所以还是自己把常用的函数等记下来比较好 基本用法· 1234567891011121314151617181920212223242526272829303132333435363738import angrdef Go():    def is_good(state):        output &#x3D; state.po">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-05-04T12:01:12.000Z">
+<meta property="article:modified_time" content="2024-05-04T14:28:37.605Z">
+<meta property="article:author" content="Orchid">
+<meta property="article:tag" content="Reverse">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/bochii.png">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/bochii.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/bochii.png">
+        
+      
+    
+    <!-- title -->
+    <title>[doing]angr用法</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/categories/">分类</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/friends/">朋友</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2024/05/05/doing-idapython%E7%94%A8%E6%B3%95/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&text=[doing]angr用法"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&is_video=false&description=[doing]angr用法"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=[doing]angr用法&body=Check out this article: http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&name=[doing]angr用法&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&t=[doing]angr用法"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">基本用法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E9%98%B6%E7%94%A8%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">进阶用法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7%E5%8C%96"><span class="toc-number">3.1.</span> <span class="toc-text">符号化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%90%91%E9%87%8F"><span class="toc-number">3.1.1.</span> <span class="toc-text">创建向量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">3.1.2.</span> <span class="toc-text">寄存器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%88"><span class="toc-number">3.1.3.</span> <span class="toc-text">栈</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98"><span class="toc-number">3.1.4.</span> <span class="toc-text">内存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98"><span class="toc-number">3.1.5.</span> <span class="toc-text">动态内存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6"><span class="toc-number">3.1.6.</span> <span class="toc-text">文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B1%82%E8%A7%A3"><span class="toc-number">3.1.7.</span> <span class="toc-text">求解</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%A6%E6%9D%9F%E6%B1%82%E8%A7%A3"><span class="toc-number">3.2.</span> <span class="toc-text">约束求解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hook%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.</span> <span class="toc-text">Hook函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Hook%E5%9C%B0%E5%9D%80"><span class="toc-number">3.3.1.</span> <span class="toc-text">Hook地址</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Hook%E5%87%BD%E6%95%B0%E5%90%8D"><span class="toc-number">3.3.2.</span> <span class="toc-text">Hook函数名</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        [doing]angr用法
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Orchid</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-05-04T12:01:12.000Z" class="dt-published" itemprop="datePublished">2024-05-04</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Reverse/" rel="tag">Reverse</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="写在前面">写在前面<a class="anchor" href="#写在前面">·</a></h2>
+<p>零散的学过angr，但是每次用总是会忘记用法，还得去翻<a target="_blank" rel="noopener" href="https://github.com/ZERO-A-ONE/AngrCTF_FITM/tree/master/%E7%AC%94%E8%AE%B0">大佬的博客</a>，所以还是自己把常用的函数等记下来比较好</p>
+<h2 id="基本用法">基本用法<a class="anchor" href="#基本用法">·</a></h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> angr</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">Go</span>():</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">is_good</span>(<span class="params">state</span>):</span><br><span class="line">        output = state.posix.dumps(<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">b&#x27;Right&#x27;</span> <span class="keyword">in</span> output:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">is_bad</span>(<span class="params">state</span>):</span><br><span class="line">        output = state.posix.dumps(<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">b&#x27;Fail&#x27;</span> <span class="keyword">in</span> output:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">        </span><br><span class="line">    path = <span class="string">&#x27;./file_path&#x27;</span></span><br><span class="line">    p = angr.Project(path, auto_load_libs=<span class="literal">False</span>)</span><br><span class="line">    </span><br><span class="line">    initial_state = p.factory.entry_state()</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    sm = p.factory.simgr(initial_state, veritesting=<span class="literal">True</span>)</span><br><span class="line">    </span><br><span class="line">    sm.explore(find=is_good, avoid=is_bad)</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> sm.found:</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> sm.found:</span><br><span class="line">            solved_state = i</span><br><span class="line">            solution = solved_state.posix.dumps(<span class="number">0</span>)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&#x27;[+]Success! Solution is <span class="subst">&#123;solution.decode(<span class="string">&quot;utf-8&quot;</span>, <span class="string">&quot;replace&quot;</span>)&#125;</span>&#x27;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;[-]Failed! No solution found&#x27;</span>)</span><br><span class="line">        </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    Go()</span><br></pre></td></tr></table></figure>
+<h2 id="进阶用法">进阶用法<a class="anchor" href="#进阶用法">·</a></h2>
+<h3 id="符号化">符号化<a class="anchor" href="#符号化">·</a></h3>
+<h4 id="创建向量">创建向量<a class="anchor" href="#创建向量">·</a></h4>
+<p>对于程序中未知的量，我们可以通过符号化变量求解，可以把他理解为设未知数，可以符号化寄存器、栈、内存、动态内存、文件</p>
+<p>首先是创建符号化向量的用法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x1 = claripy.BVS(<span class="string">&#x27;x1&#x27;</span>, x1_size_in_bits)</span><br><span class="line"><span class="comment">#注意size是以bit为单位的，也就是byte*8</span></span><br></pre></td></tr></table></figure>
+<h4 id="寄存器">寄存器<a class="anchor" href="#寄存器">·</a></h4>
+<p>对于符号化寄存器，可以在创建<code>initial_state</code>后，使用以下代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">initial_state.regs.eax = x1</span><br><span class="line"><span class="comment">#x1是你创建的符号化向量</span></span><br></pre></td></tr></table></figure>
+<p>其中除了BVS，还有BVV。<code>BVV(value, size)</code>即BitVector Value，表示有确定值的位向量，而<code>BVS(name, size)</code>则是BitVector Symbol，开始时值未知</p>
+<h4 id="栈">栈<a class="anchor" href="#栈">·</a></h4>
+<p>栈空间的处理，我们首先需要恢复ESP和EBP的状态，以便后续计算</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">initial_state.regs.ebp = initial_state.regs.esp <span class="comment">#EBP=ESP</span></span><br></pre></td></tr></table></figure>
+<p>接着就是推入符号化向量至栈帧中的指定位置，但是我们需要的位置不一定是栈顶，所以我们需要进行填充，比如从ida看见一个变量<code>int i; // [esp+8h] [ebp-10h]</code>位于<code>ebp-10h</code>处，为了将符号化向量推入此处，我们就需要padding来填充</p>
+<table>
+<thead>
+<tr>
+<th>L_addr</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rbp-30h</td>
+<td>i</td>
+</tr>
+<tr>
+<td>rbp-29h</td>
+<td>i</td>
+</tr>
+<tr>
+<td>rbp-28h</td>
+<td>i</td>
+</tr>
+<tr>
+<td>rbp-27h</td>
+<td>i</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>rbp-1h</td>
+<td>padding</td>
+</tr>
+<tr>
+<td>rbp-0h</td>
+<td>padding</td>
+</tr>
+</tbody>
+</table>
+<p>所以我们需要填充后再符号化</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">initial_state.regs.esp -= <span class="number">0x2C</span> <span class="comment">#0x30-0x4</span></span><br><span class="line">initial_state.stack_push(x1)   <span class="comment">#x1为创建好的向量</span></span><br></pre></td></tr></table></figure>
+<h4 id="内存">内存<a class="anchor" href="#内存">·</a></h4>
+<p>其实就是将内存地址符号化</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x1_addr = <span class="number">0x114514</span></span><br><span class="line">initial_state.memory.store(x1_addr, x1)</span><br></pre></td></tr></table></figure>
+<h4 id="动态内存">动态内存<a class="anchor" href="#动态内存">·</a></h4>
+<p>动态内存就是用malloc分配的，其实和内存的区别就在于中间多了一步将虚假的堆地址存入malloc()函数返回的变量的步骤</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">buffer0 -&gt; fake_heap_addr0 -&gt; symbolic_BVS0</span><br></pre></td></tr></table></figure>
+<p>所以我们的可以这样符号化</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#将fake_heap存入buffer</span></span><br><span class="line">initial_state.memory.store(buffer0, fake_heap_addr0, endness=project.arch.memory_endness)</span><br><span class="line"></span><br><span class="line"><span class="comment">#将symbolic_BVS存入fake_heap</span></span><br><span class="line">initial_state.memory.store(fake_heap_addr0, symbolic_BVS0, endness=project.arch.memory_endness)</span><br><span class="line"></span><br><span class="line"><span class="comment">#这里的endness是设置端序，有LE、BE、ME可选，这里project.arch.memory_endness是使用与项目相同的端序储存</span></span><br></pre></td></tr></table></figure>
+<h4 id="文件">文件<a class="anchor" href="#文件">·</a></h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">filename = <span class="string">&#x27;OJKSQYDP.txt&#x27;</span></span><br><span class="line">symbolic_file_size_bytes = <span class="number">64</span></span><br><span class="line">passwd0 = claripy.BVS(<span class="string">&#x27;password&#x27;</span>, symbolic_file_size_bytes * <span class="number">8</span>)</span><br><span class="line">passwd_file = angr.storage.SimFile(filename, content=passwd0, size=symbolic_file_size_bytes)</span><br><span class="line"><span class="comment">#这里BVS以bit为单位，file有以byte为单位，很奇怪</span></span><br><span class="line"></span><br><span class="line">initial_state.fs.insert(filename, passwd_file)</span><br><span class="line"></span><br><span class="line">simulation = project.factory.simgr(initial_state)</span><br></pre></td></tr></table></figure>
+<h4 id="求解">求解<a class="anchor" href="#求解">·</a></h4>
+<p>创建了向量后当然需要求解，使用<code>eval</code>方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">solved_x1 = solved_state.solver.<span class="built_in">eval</span>(x1, cast_to=<span class="built_in">bytes</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&#x27;[+] Success! Solution is: <span class="subst">&#123;solved_x1.decode(<span class="string">&#x27;utf-8&#x27;</span>)&#125;</span>&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="约束求解">约束求解<a class="anchor" href="#约束求解">·</a></h3>
+<p>当angr遇到循环加上分支路线路线时，就容易发生路径爆炸，即使是非常简单的功能也可能无法求解，这时候可以我们自己化简逻辑</p>
+<p>这方面angr和z3差不多，同样是<code>.add()</code>添加约束，接着用<code>.eval()</code>求解</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># fresh state</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>state = proj.factory.entry_state()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>state.solver.add(x - y &gt;= <span class="number">4</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>state.solver.add(y &gt; <span class="number">0</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>state.solver.<span class="built_in">eval</span>(x)</span><br><span class="line"><span class="number">5</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>state.solver.<span class="built_in">eval</span>(y)</span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>state.solver.<span class="built_in">eval</span>(x + y)</span><br><span class="line"><span class="number">6</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 其中eval还有一些其他用法</span></span><br><span class="line"><span class="comment"># solver.eval(expression) 将会解出一个可行解</span></span><br><span class="line"><span class="comment"># solver.eval_one(expression)将会给出一个表达式的可行解，若有多个可行解，则抛出异常。</span></span><br><span class="line"><span class="comment"># solver.eval_upto(expression, n)将会给出最多n个可行解，如果不足n个就给出所有的可行解。</span></span><br><span class="line"><span class="comment"># solver.eval_exact(expression, n)将会给出n个可行解，如果解的个数不等于n个，将会抛出异常。</span></span><br><span class="line"><span class="comment"># solver.min(expression)将会给出最小可行解</span></span><br><span class="line"><span class="comment"># solver.max(expression)将会给出最大可行解</span></span><br></pre></td></tr></table></figure>
+<p>所以我们的思路大概如下：</p>
+<ol>
+<li class="lvl-3">
+<p>设置符号化向量</p>
+</li>
+<li class="lvl-3">
+<p>找到我们需要简化的地址</p>
+</li>
+<li class="lvl-3">
+<p>写出我们的约束条件</p>
+</li>
+<li class="lvl-3">
+<p>根据条件求解</p>
+</li>
+</ol>
+<p>这里主要记新的东西</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 只要到达compare函数就停下来</span></span><br><span class="line">cpr_addr = <span class="number">0x114514</span></span><br><span class="line">sm.explore(find=cpr_addr)</span><br></pre></td></tr></table></figure>
+<p>接着添加约束条件并求解</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 首先load出符号化的向量，注意是byte</span></span><br><span class="line">symbolic_bitvector0 = solved_state.memory.load(x0_BVS_addr, BVS_size_in_bytes)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 接着设置目标值</span></span><br><span class="line">desired_value = <span class="string">&#x27;XXXXXXXXXX&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后添加约束条件，并求解</span></span><br><span class="line">solved_state.solver.add(symbolic_bitvector0 == desired_value)</span><br><span class="line">solution0 = solved_state.solver.<span class="built_in">eval</span>(x0, cast_to=<span class="built_in">bytes</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="Hook函数">Hook函数<a class="anchor" href="#Hook函数">·</a></h3>
+<h4 id="Hook地址">Hook地址<a class="anchor" href="#Hook地址">·</a></h4>
+<p>和约束求解类似，我们的思路依然是用自己的函数逻辑替换原函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@p.hook(<span class="params">compare_addr, length=len_to_skip</span>)</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">skip_check_equals</span>(<span class="params">state</span>):</span><br><span class="line">        input_addr = <span class="number">0x114514</span></span><br><span class="line">        input_len = <span class="number">16</span></span><br><span class="line">        <span class="comment"># 同样使用load提取内存数据，不同的是不需要我们自己设置符号化向量</span></span><br><span class="line">        input_string = state.memory.load(input_addr, input_len)</span><br><span class="line"></span><br><span class="line">        desired_value = <span class="string">&#x27;XXXXXXXXXXXXXX&#x27;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 注意返回值到哪个寄存器，通常是ax，有eax和rax之分</span></span><br><span class="line">        <span class="comment"># 使用BVV构建直接值</span></span><br><span class="line">        register_size_in_bit = <span class="number">32</span></span><br><span class="line">        state.regs.eax = claripy.If(</span><br><span class="line">            input_string == desired_value,</span><br><span class="line">            claripy.BVV(<span class="number">1</span>, register_size_in_bit)</span><br><span class="line">            claripy.BVV(<span class="number">0</span>, register_size_in_bit)</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+<h4 id="Hook函数名">Hook函数名<a class="anchor" href="#Hook函数名">·</a></h4>
+<p>假如一个函数被反复调用，我们又需要hook时，显然hook函数名是更好的选择，使用方法如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># hook函数设置大致相同，不同的是定义一个继承angr.SimProcedure的类，再通过p.hook_symbol调用</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ReplaceCheckEquals</span>(angr.SimProcedure):</span><br><span class="line">    <span class="comment"># 编写方式接近于C</span></span><br><span class="line">    <span class="comment"># 除self外的参数即为需要hook的函数的声明</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, to_check, length</span>):</span><br><span class="line">        input_addr = to_check</span><br><span class="line">        input_len = length</span><br><span class="line">        <span class="comment"># 同样使用load提取内存数据，不同的是不需要我们自己设置符号化向量</span></span><br><span class="line">        input_string = state.memory.load(input_addr, input_len)</span><br><span class="line"></span><br><span class="line">        desired_value = <span class="string">&#x27;XXXXXXXXXXXXXX&#x27;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 注意返回值到哪个寄存器，通常是ax，有eax和rax之分</span></span><br><span class="line">        <span class="comment"># 使用BVV构建直接值</span></span><br><span class="line">        register_size_in_bit = <span class="number">32</span></span><br><span class="line">        state.regs.eax = claripy.If(</span><br><span class="line">            input_string == desired_value,</span><br><span class="line">            claripy.BVV(<span class="number">1</span>, register_size_in_bit)</span><br><span class="line">            claripy.BVV(<span class="number">0</span>, register_size_in_bit)</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置需要hook的函数名并调用类</span></span><br><span class="line">check_equals_symbol = <span class="string">&#x27;check_equals_XXXXXXXXXXXX&#x27;</span></span><br><span class="line">p.hook_symbol(check_equals_symbol, ReplaceCheckEquals())</span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/categories/">分类</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/friends/">朋友</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">基本用法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E9%98%B6%E7%94%A8%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">进阶用法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7%E5%8C%96"><span class="toc-number">3.1.</span> <span class="toc-text">符号化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%90%91%E9%87%8F"><span class="toc-number">3.1.1.</span> <span class="toc-text">创建向量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">3.1.2.</span> <span class="toc-text">寄存器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%88"><span class="toc-number">3.1.3.</span> <span class="toc-text">栈</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98"><span class="toc-number">3.1.4.</span> <span class="toc-text">内存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98"><span class="toc-number">3.1.5.</span> <span class="toc-text">动态内存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6"><span class="toc-number">3.1.6.</span> <span class="toc-text">文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B1%82%E8%A7%A3"><span class="toc-number">3.1.7.</span> <span class="toc-text">求解</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%A6%E6%9D%9F%E6%B1%82%E8%A7%A3"><span class="toc-number">3.2.</span> <span class="toc-text">约束求解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hook%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.</span> <span class="toc-text">Hook函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Hook%E5%9C%B0%E5%9D%80"><span class="toc-number">3.3.1.</span> <span class="toc-text">Hook地址</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Hook%E5%87%BD%E6%95%B0%E5%90%8D"><span class="toc-number">3.3.2.</span> <span class="toc-text">Hook函数名</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&text=[doing]angr用法"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&is_video=false&description=[doing]angr用法"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=[doing]angr用法&body=Check out this article: http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&title=[doing]angr用法"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&name=[doing]angr用法&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2024/05/04/[doing]angr%E7%94%A8%E6%B3%95/&t=[doing]angr用法"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+      
+        
+          2023-2024
+            Orchid
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+      -->
+          <li><a href="/">
+              首页
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/archives/">
+              归档
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/categories/">
+              分类
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/about/">
+              关于
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/friends/">
+              朋友
+            </a></li><!--
+    -->
+          
+      </ul>
+      <ul>
+        
+          <!-- 不蒜子统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次
+          </span>
+          <span class="post-meta-divider">|</span>
+          <span id="busuanzi_container_site_uv" style='display:none'>
+            本站访客数<span id="busuanzi_value_site_uv"></span>人
+          </span>
+          <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+          
+      </ul>
+    </nav>
+  </div>
+  <div class="beian">
+    <p><a href="http://www.beian.miit.gov.cn" target="_blank">蜀ICP备2024070653号-1</a></p>
+  </div>
+
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?f22c96bf057548e4ed458eb09ecec637";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

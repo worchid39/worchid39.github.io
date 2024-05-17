@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="0. 创建GitHub账号· GitHub官网这个就自行解决吧 1. 安装PicGo· PicGo官网同样下载安装即可 2. 配置Github· 2.1 新建一个仓库用于存放图片·  需要注意的就是仓库属性选Public。命名的话选择一个能标识图床作用的就好 2.2 获取token用于PicGo访问Github· 依次点击头像 &gt; Settings &gt; Developer settin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PicGo配合Github搭建自己的图床">
+<meta property="og:url" content="http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/index.html">
+<meta property="og:site_name" content="Orchid&#39;s Blog">
+<meta property="og:description" content="0. 创建GitHub账号· GitHub官网这个就自行解决吧 1. 安装PicGo· PicGo官网同样下载安装即可 2. 配置Github· 2.1 新建一个仓库用于存放图片·  需要注意的就是仓库属性选Public。命名的话选择一个能标识图床作用的就好 2.2 获取token用于PicGo访问Github· 依次点击头像 &gt; Settings &gt; Developer settin">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/CopyQ.LHBAXH.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/20240227093640.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/CopyQ.AJiaiK.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/20240227094343.png">
+<meta property="article:published_time" content="2024-02-27T01:07:03.000Z">
+<meta property="article:modified_time" content="2024-02-27T10:09:20.065Z">
+<meta property="article:author" content="Orchid">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/CopyQ.LHBAXH.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/bochii.png">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/bochii.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/bochii.png">
+        
+      
+    
+    <!-- title -->
+    <title>PicGo配合Github搭建自己的图床</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/categories/">分类</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/friends/">朋友</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2024/05/04/%5Bdoing%5Dangr%E7%94%A8%E6%B3%95/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2024/02/18/%5BbeginCTF2024%5DRe%E9%83%A8%E5%88%86WP/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&text=PicGo配合Github搭建自己的图床"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&is_video=false&description=PicGo配合Github搭建自己的图床"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=PicGo配合Github搭建自己的图床&body=Check out this article: http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&name=PicGo配合Github搭建自己的图床&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&t=PicGo配合Github搭建自己的图床"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%88%9B%E5%BB%BAGitHub%E8%B4%A6%E5%8F%B7"><span class="toc-number">1.</span> <span class="toc-text">0. 创建GitHub账号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%89%E8%A3%85PicGo"><span class="toc-number">2.</span> <span class="toc-text">1. 安装PicGo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%85%8D%E7%BD%AEGithub"><span class="toc-number">3.</span> <span class="toc-text">2. 配置Github</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AA%E4%BB%93%E5%BA%93%E7%94%A8%E4%BA%8E%E5%AD%98%E6%94%BE%E5%9B%BE%E7%89%87"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 新建一个仓库用于存放图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%8E%B7%E5%8F%96token%E7%94%A8%E4%BA%8EPicGo%E8%AE%BF%E9%97%AEGithub"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 获取token用于PicGo访问Github</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%85%8D%E7%BD%AEPicGo"><span class="toc-number">4.</span> <span class="toc-text">3. 配置PicGo</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        PicGo配合Github搭建自己的图床
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Orchid</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-02-27T01:07:03.000Z" class="dt-published" itemprop="datePublished">2024-02-27</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/Tools/">Tools</a>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="0-创建GitHub账号">0. 创建GitHub账号<a class="anchor" href="#0-创建GitHub账号">·</a></h2>
+<p><a href="github.com">GitHub官网</a>这个就自行解决吧</p>
+<h2 id="1-安装PicGo">1. 安装PicGo<a class="anchor" href="#1-安装PicGo">·</a></h2>
+<p><a target="_blank" rel="noopener" href="https://picgo.github.io/PicGo-Doc/zh/">PicGo官网</a>同样下载安装即可</p>
+<h2 id="2-配置Github">2. 配置Github<a class="anchor" href="#2-配置Github">·</a></h2>
+<h3 id="2-1-新建一个仓库用于存放图片">2.1 新建一个仓库用于存放图片<a class="anchor" href="#2-1-新建一个仓库用于存放图片">·</a></h3>
+<p><img src="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/CopyQ.LHBAXH.png" alt="新建仓库">
+需要注意的就是仓库属性选Public。命名的话选择一个能标识图床作用的就好</p>
+<h3 id="2-2-获取token用于PicGo访问Github">2.2 获取token用于PicGo访问Github<a class="anchor" href="#2-2-获取token用于PicGo访问Github">·</a></h3>
+<p>依次点击<code>头像 &gt; Settings &gt; Developer settings &gt; Personal access tokens</code>，接下来选择<code>Tokens(classic)</code><img src="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/20240227093640.png" alt="生成token">
+点击<code>Generate new token</code>，再次选择<code>classic</code><img src="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/CopyQ.AJiaiK.png" alt="">
+注意将期限改成无限期，然后勾选下方repo</p>
+<p>得到token务必复制下来，因为只会显示一次</p>
+<h2 id="3-配置PicGo">3. 配置PicGo<a class="anchor" href="#3-配置PicGo">·</a></h2>
+<p>打开PicGo，依次点击<code>图床设置 &gt; GitHub</code><img src="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/20240227094343.png" alt="图床设置">
+仓库名即你GitHub的仓库名，分支需要改为<code>main</code>而非<code>master</code>，然后将你的token粘贴进去</p>
+<p>存储位置就是在仓库下的存储位置，如果不填则会把图片放到根目录下</p>
+<p>设定自定义域名是用来设置cdn加速的，因为国内访问GitHub速度比较玄学，所以这里用到jsdelivr用来加速</p>
+<p>自定义域名的格式就是<code>https://cdn.jsdelivr.net/gh/[github用户名]/[仓库名]@main</code>，注意分支需要填写<code>@main</code>，否则可能出现图片无法上传的情况</p>
+<p>配置完成后将图片拖入PicGo即可上传成功</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/categories/">分类</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/friends/">朋友</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%88%9B%E5%BB%BAGitHub%E8%B4%A6%E5%8F%B7"><span class="toc-number">1.</span> <span class="toc-text">0. 创建GitHub账号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%89%E8%A3%85PicGo"><span class="toc-number">2.</span> <span class="toc-text">1. 安装PicGo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%85%8D%E7%BD%AEGithub"><span class="toc-number">3.</span> <span class="toc-text">2. 配置Github</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AA%E4%BB%93%E5%BA%93%E7%94%A8%E4%BA%8E%E5%AD%98%E6%94%BE%E5%9B%BE%E7%89%87"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 新建一个仓库用于存放图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%8E%B7%E5%8F%96token%E7%94%A8%E4%BA%8EPicGo%E8%AE%BF%E9%97%AEGithub"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 获取token用于PicGo访问Github</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%85%8D%E7%BD%AEPicGo"><span class="toc-number">4.</span> <span class="toc-text">3. 配置PicGo</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&text=PicGo配合Github搭建自己的图床"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&is_video=false&description=PicGo配合Github搭建自己的图床"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=PicGo配合Github搭建自己的图床&body=Check out this article: http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&title=PicGo配合Github搭建自己的图床"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&name=PicGo配合Github搭建自己的图床&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2024/02/27/picGo%E9%85%8D%E5%90%88Github%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%9B%BE%E5%BA%8A/&t=PicGo配合Github搭建自己的图床"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+      
+        
+          2023-2024
+            Orchid
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+      -->
+          <li><a href="/">
+              首页
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/archives/">
+              归档
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/categories/">
+              分类
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/about/">
+              关于
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/friends/">
+              朋友
+            </a></li><!--
+    -->
+          
+      </ul>
+      <ul>
+        
+          <!-- 不蒜子统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次
+          </span>
+          <span class="post-meta-divider">|</span>
+          <span id="busuanzi_container_site_uv" style='display:none'>
+            本站访客数<span id="busuanzi_value_site_uv"></span>人
+          </span>
+          <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+          
+      </ul>
+    </nav>
+  </div>
+  <div class="beian">
+    <p><a href="http://www.beian.miit.gov.cn" target="_blank">蜀ICP备2024070653号-1</a></p>
+  </div>
+
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?f22c96bf057548e4ed458eb09ecec637";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
