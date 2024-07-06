@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Setup· Initialization· 模拟二进制文件 在预加载（初始化期间）状态下，有多个选项可以配置。 Binary emulation·    名称 类型 描述     argv Sequence[str] 一个模拟命令行参数的序列   rootfs str 模拟的文件系统根目录。被模拟的程序访问的所有路径都基于此目录   env (可选) MutableMapping[AnyStr,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="qiling框架初探">
+<meta property="og:url" content="http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/index.html">
+<meta property="og:site_name" content="Orchid&#39;s Blog">
+<meta property="og:description" content="Setup· Initialization· 模拟二进制文件 在预加载（初始化期间）状态下，有多个选项可以配置。 Binary emulation·    名称 类型 描述     argv Sequence[str] 一个模拟命令行参数的序列   rootfs str 模拟的文件系统根目录。被模拟的程序访问的所有路径都基于此目录   env (可选) MutableMapping[AnyStr,">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-07-06T07:46:58.000Z">
+<meta property="article:modified_time" content="2024-07-06T07:48:51.086Z">
+<meta property="article:author" content="Orchid">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/bochii.png">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/bochii.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/bochii.png">
+        
+      
+    
+    <!-- title -->
+    <title>qiling框架初探</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/categories/">分类</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/friends/">朋友</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2024/05/05/doing-idapython%E7%94%A8%E6%B3%95/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&text=qiling框架初探"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&is_video=false&description=qiling框架初探"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=qiling框架初探&body=Check out this article: http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&name=qiling框架初探&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&t=qiling框架初探"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Setup"><span class="toc-number">1.</span> <span class="toc-text">Setup</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Initialization"><span class="toc-number">1.1.</span> <span class="toc-text">Initialization</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Binary-emulation"><span class="toc-number">1.1.1.</span> <span class="toc-text">Binary emulation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Shellcode-emulation"><span class="toc-number">1.1.2.</span> <span class="toc-text">Shellcode emulation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Common-Qiling-initialization-options"><span class="toc-number">1.1.3.</span> <span class="toc-text">Common Qiling initialization options</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Setup-2"><span class="toc-number">1.2.</span> <span class="toc-text">Setup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Execution"><span class="toc-number">1.3.</span> <span class="toc-text">Execution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qltool"><span class="toc-number">2.</span> <span class="toc-text">Qltool</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Emulation"><span class="toc-number">2.1.</span> <span class="toc-text">Emulation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Run-Options"><span class="toc-number">2.1.1.</span> <span class="toc-text">Run Options</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Code-Options"><span class="toc-number">2.1.2.</span> <span class="toc-text">Code Options</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Common-Options"><span class="toc-number">2.1.3.</span> <span class="toc-text">Common Options</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#qltui"><span class="toc-number">2.2.</span> <span class="toc-text">qltui</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Examples"><span class="toc-number">2.3.</span> <span class="toc-text">Examples</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#shellcode"><span class="toc-number">2.3.1.</span> <span class="toc-text">shellcode</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UEFI-file"><span class="toc-number">2.3.2.</span> <span class="toc-text">UEFI file</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#GDB-debugger-enable"><span class="toc-number">2.3.3.</span> <span class="toc-text">GDB debugger enable</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Binary-file-and-argv"><span class="toc-number">2.3.4.</span> <span class="toc-text">Binary file and argv</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Binary-file-and-various-output-format"><span class="toc-number">2.3.5.</span> <span class="toc-text">Binary file and various output format</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Binary-file-and-env"><span class="toc-number">2.3.6.</span> <span class="toc-text">Binary file and env</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#qltui-2"><span class="toc-number">2.3.7.</span> <span class="toc-text">qltui</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        qiling框架初探
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Orchid</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-07-06T07:46:58.000Z" class="dt-published" itemprop="datePublished">2024-07-06</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="Setup">Setup<a class="anchor" href="#Setup">·</a></h2>
+<h3 id="Initialization">Initialization<a class="anchor" href="#Initialization">·</a></h3>
+<p><strong>模拟二进制文件</strong><br>
+在预加载（初始化期间）状态下，有多个选项可以配置。</p>
+<h4 id="Binary-emulation">Binary emulation<a class="anchor" href="#Binary-emulation">·</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">名称</th>
+<th style="text-align:left">类型</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">argv</td>
+<td style="text-align:left">Sequence[str]</td>
+<td style="text-align:left">一个模拟命令行参数的序列</td>
+</tr>
+<tr>
+<td style="text-align:left">rootfs</td>
+<td style="text-align:left">str</td>
+<td style="text-align:left">模拟的文件系统根目录。被模拟的程序访问的所有路径都基于此目录</td>
+</tr>
+<tr>
+<td style="text-align:left">env (可选)</td>
+<td style="text-align:left">MutableMapping[AnyStr, AnyStr]</td>
+<td style="text-align:left">一个环境变量字典，供模拟程序使用</td>
+</tr>
+</tbody>
+</table>
+<h4 id="Shellcode-emulation">Shellcode emulation<a class="anchor" href="#Shellcode-emulation">·</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">名称</th>
+<th style="text-align:left">类型</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">code</td>
+<td style="text-align:left">bytes</td>
+<td style="text-align:left">要模拟的 shellcode，替代 argv</td>
+</tr>
+<tr>
+<td style="text-align:left">rootfs (可选)</td>
+<td style="text-align:left">str</td>
+<td style="text-align:left">参见上表</td>
+</tr>
+<tr>
+<td style="text-align:left">ostype</td>
+<td style="text-align:left">str 或 QL_OS</td>
+<td style="text-align:left">设置目标操作系统（不区分大小写）：‘Linux’, ‘FreeBSD’, ‘MacOS’, ‘Windows’, ‘UEFI’, ‘DOS’, ‘EVM’ 或 ‘QNX’</td>
+</tr>
+<tr>
+<td style="text-align:left">archtype</td>
+<td style="text-align:left">str 或 QL_ARCH</td>
+<td style="text-align:left">设置目标架构（不区分大小写）：‘a8086’, ‘x86’, ‘x8664’, ‘ARM’, ‘ARM64’, ‘MIPS’, ‘EVM’, ‘Cortex_M’, ‘RISCV’ 或 ‘RISCV64’</td>
+</tr>
+<tr>
+<td style="text-align:left">endian (可选)</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">指示架构的字节序（仅对 ARM 和 MIPS 相关）</td>
+</tr>
+<tr>
+<td style="text-align:left">thumb (可选)</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">指示 ARM thumb 模式（仅对 ARM 相关）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="Common-Qiling-initialization-options">Common Qiling initialization options<a class="anchor" href="#Common-Qiling-initialization-options">·</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">名称</th>
+<th style="text-align:left">类型</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">verbose (可选)</td>
+<td style="text-align:left">QL_VERBOSE</td>
+<td style="text-align:left">设置 Qiling 日志的详细程度（默认：QL_VERBOSE.DEFAULT）。更多细节参见打印部分</td>
+</tr>
+<tr>
+<td style="text-align:left">profile (可选)</td>
+<td style="text-align:left">str</td>
+<td style="text-align:left">额外设置的配置文件路径。更多细节参见配置文件部分</td>
+</tr>
+<tr>
+<td style="text-align:left">console (可选)</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">如果设置为 False，则完全禁用 Qiling 日志，这相当于设置 verbose=QL_VERBOSE.DISABLED</td>
+</tr>
+<tr>
+<td style="text-align:left">multithread (可选)</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">指示目标是否应作为多线程程序仿真</td>
+</tr>
+<tr>
+<td style="text-align:left">libcache (可选)</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">指示是否应从缓存加载库。这可以节省库在后续运行时的解析和重定位时间。目前仅适用于 Windows</td>
+</tr>
+</tbody>
+</table>
+<h3 id="Setup-2">Setup<a class="anchor" href="#Setup-2">·</a></h3>
+<p>在 <code>ql=Qiling()</code> 之后和 <code>ql.run()</code> 之前可用的选项：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><strong>ql.fs_mapper(“tobe_mapped”, “actual_path”)</strong><br>
+将 Qiling 文件或目录映射到实际文件夹，例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ql.fs_mapper(<span class="string">&#x27;/etc&#x27;</span>, <span class="string">&#x27;/real_etc&#x27;</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li class="lvl-2">
+<p><strong>ql.debug_stop = False</strong><br>
+默认是 False。遇到缺失的 POSIX syscall 或 API 停止。</p>
+</li>
+<li class="lvl-2">
+<p><strong>ql.debugger = None</strong><br>
+远程调试器。请参阅相关<a target="_blank" rel="noopener" href="https://docs.qiling.io/en/latest/debugger/">文档</a>。</p>
+</li>
+<li class="lvl-2">
+<p><strong>ql.verbose = 1</strong><br>
+从 1 到 n，请参阅<a target="_blank" rel="noopener" href="https://docs.qiling.io/en/latest/print/">print section</a>获取更多细节。</p>
+</li>
+</ul>
+<h3 id="Execution">Execution<a class="anchor" href="#Execution">·</a></h3>
+<p>通过调用 <code>ql.run()</code> 来启动二进制执行。但在某些情况下，如部分执行，有 4 个额外选项可以在 <code>ql.run()</code> 中使用，以实现更精细的控制。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ql.run(begin, end, timeout, count)</span><br></pre></td></tr></table></figure>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ql = Qiling()</span><br><span class="line">ql.run(begin = <span class="number">0xFE</span>, end = <span class="number">0xFF</span>)</span><br><span class="line">ql.run(begin = <span class="number">0xAE</span>, end = <span class="number">0xFF</span>)</span><br></pre></td></tr></table></figure>
+<p>这将只允许程序在地址 0xFE 到 0xFF 之间执行。因此，像模糊测试这样的活动不必从头到尾执行整个文件，只需模糊测试目标部分。请查看示例代码。</p>
+<h2 id="Qltool">Qltool<a class="anchor" href="#Qltool">·</a></h2>
+<p><code>qltool</code>有四个可用命令：</p>
+<ol>
+<li class="lvl-3">
+<p><strong>run</strong>：仿真一个程序二进制文件。</p>
+</li>
+<li class="lvl-3">
+<p><strong>code</strong>：执行一段shellcode。</p>
+</li>
+<li class="lvl-3">
+<p><strong>qltui</strong>：显示<code>qltool</code>的终端用户界面。</p>
+</li>
+<li class="lvl-3">
+<p><strong>examples</strong>：显示用法示例。</p>
+</li>
+</ol>
+<h3 id="Emulation">Emulation<a class="anchor" href="#Emulation">·</a></h3>
+<h4 id="Run-Options">Run Options<a class="anchor" href="#Run-Options">·</a></h4>
+<p>用于仿真二进制文件的选项：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">选项名称</th>
+<th style="text-align:left">缩写</th>
+<th style="text-align:left">参数</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>--filename</code></td>
+<td style="text-align:left"><code>-f</code></td>
+<td style="text-align:left">filename</td>
+<td style="text-align:left">要仿真的二进制文件名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--rootfs</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">dirname</td>
+<td style="text-align:left">仿真根目录，所有库文件所在的目录</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--args</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">要仿真的程序命令行参数</td>
+</tr>
+</tbody>
+</table>
+<p>注意：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>如果未指定<code>--filename</code>，最后一个参数将被视为程序二进制文件。</p>
+</li>
+<li class="lvl-2">
+<p>如果未指定<code>--args</code>，所有尾随参数将被视为程序命令行参数。</p>
+</li>
+</ul>
+<h4 id="Code-Options">Code Options<a class="anchor" href="#Code-Options">·</a></h4>
+<p>用于执行shellcode的选项：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">选项名称</th>
+<th style="text-align:left">缩写</th>
+<th style="text-align:left">参数</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>--filename</code></td>
+<td style="text-align:left"><code>-f</code></td>
+<td style="text-align:left">filename</td>
+<td style="text-align:left">输入文件名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--input</code></td>
+<td style="text-align:left"><code>-i</code></td>
+<td style="text-align:left">hex</td>
+<td style="text-align:left">输入的十六进制字符串；仅当<code>--format</code>设置为hex时相关</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--format</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">asm, hex, bin</td>
+<td style="text-align:left">指定文件或输入格式：汇编（assembly）、十六进制字符串（hex）或二进制文件（bin）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--arch</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">x86, x8664, arm, arm_thumb, arm64, mips, a8086, evm</td>
+<td style="text-align:left">目标架构</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--endian</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">little, big</td>
+<td style="text-align:left">目标字节序（默认：little）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--os</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">linux, freebsd, macos, windows, uefi, dos, evm</td>
+<td style="text-align:left">目标操作系统</td>
+</tr>
+</tbody>
+</table>
+<p>注意：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>当<code>--format</code>设置为hex时，<code>qltool</code>首先会在<code>--input</code>中查找数据。如果未指定输入字符串，它会参考在<code>--filename</code>中指定的文件。</p>
+</li>
+</ul>
+<h4 id="Common-Options">Common Options<a class="anchor" href="#Common-Options">·</a></h4>
+<p>这些选项适用于所有命令：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">选项名称</th>
+<th style="text-align:left">缩写</th>
+<th style="text-align:left">参数</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>--verbose</code></td>
+<td style="text-align:left"><code>-v</code></td>
+<td style="text-align:left">off, default, debug, disasm, dump</td>
+<td style="text-align:left">设置日志详细级别</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--env</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">filename</td>
+<td style="text-align:left">包含环境字典的Pickle文件路径，或一个评估结果为字典的Python字符串</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--gdb</code></td>
+<td style="text-align:left"><code>-g</code></td>
+<td style="text-align:left">[server:port]</td>
+<td style="text-align:left">启用gdb服务器</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--qdb</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">在入口点附加qdb，目前仅支持MIPS和ARM（thumb模式）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--rr</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">启用qdb记录和重放功能；需要<code>--qdb</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--profile</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">filename</td>
+<td style="text-align:left">指定配置文件</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--no-console</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">不将程序输出发送到stdout</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--filter</code></td>
+<td style="text-align:left"><code>-e</code></td>
+<td style="text-align:left">regexp</td>
+<td style="text-align:left">在日志输出上应用过滤正则表达式</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--log-file</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">filename</td>
+<td style="text-align:left">将日志输出到文件</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--log-plain</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">在日志输出中不使用颜色；在将日志输出到文件时有用</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--root</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">启用需要sudo的模式</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--debug-stop</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">在第一个错误时停止仿真；需要将详细级别设置为debug或dump</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--multithread</code></td>
+<td style="text-align:left"><code>-m</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">以多线程模式执行程序</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--timeout</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">microseconds</td>
+<td style="text-align:left">设置仿真超时时间（以微秒为单位，1000000μs = 1s）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--coverage-file</code></td>
+<td style="text-align:left"><code>-c</code></td>
+<td style="text-align:left">filename</td>
+<td style="text-align:left">代码覆盖率输出文件</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--coverage-format</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">drcov, drcov_exact</td>
+<td style="text-align:left">代码覆盖率文件格式</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--json</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">输出仿真报告为JSON格式</td>
+</tr>
+</tbody>
+</table>
+<h3 id="qltui">qltui<a class="anchor" href="#qltui">·</a></h3>
+<p><code>qltui</code>是<code>qltool</code>的终端用户界面，提供以下功能：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>运行在<code>qltool</code>之上。</p>
+</li>
+<li class="lvl-2">
+<p>通过界面接受<code>run</code>和<code>code</code>命令的数据。</p>
+</li>
+<li class="lvl-2">
+<p>返回一个Argparse Namespace对象给<code>qltool</code>进行执行。</p>
+</li>
+<li class="lvl-2">
+<p>提供交互式报告查看器以及将报告保存为PDF的选项。</p>
+</li>
+</ul>
+<h3 id="Examples">Examples<a class="anchor" href="#Examples">·</a></h3>
+<h4 id="shellcode">shellcode<a class="anchor" href="#shellcode">·</a></h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">./qltool code --os linux --<span class="built_in">arch</span> arm --format hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">./qltool code --os linux --<span class="built_in">arch</span> x86 --format asm -f examples/shellcodes/lin32_execve.asm</span></span><br><span class="line">```k</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## binary file</span></span></span><br><span class="line"></span><br><span class="line">```shell</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux</span></span><br></pre></td></tr></table></figure>
+<h4 id="UEFI-file">UEFI file<a class="anchor" href="#UEFI-file">·</a></h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel</span><br></pre></td></tr></table></figure>
+<h4 id="GDB-debugger-enable">GDB debugger enable<a class="anchor" href="#GDB-debugger-enable">·</a></h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux</span><br></pre></td></tr></table></figure>
+<h4 id="Binary-file-and-argv">Binary file and argv<a class="anchor" href="#Binary-file-and-argv">·</a></h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./qltool run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3</span><br><span class="line">./qltool run --rootfs examples/rootfs/x8664_linux examples/rootfs/x8664_linux/bin/x8664_args test1 test2 test3</span><br></pre></td></tr></table></figure>
+<h4 id="Binary-file-and-various-output-format">Binary file and various output format<a class="anchor" href="#Binary-file-and-various-output-format">·</a></h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --verbose disasm</span><br></pre></td></tr></table></figure>
+<h4 id="Binary-file-and-env">Binary file and env<a class="anchor" href="#Binary-file-and-env">·</a></h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./qltool run -f jexamples/rootfs/x8664_linux/bin/tester --rootfs jexamples/rootfs/x8664_linux --env &#x27;&#123;&quot;LD_PRELOAD&quot;:&quot;hijack.so&quot;&#125;&#x27; --verbose debug</span><br></pre></td></tr></table></figure>
+<h4 id="qltui-2">qltui<a class="anchor" href="#qltui-2">·</a></h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./qltool qltui</span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/categories/">分类</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/friends/">朋友</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Setup"><span class="toc-number">1.</span> <span class="toc-text">Setup</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Initialization"><span class="toc-number">1.1.</span> <span class="toc-text">Initialization</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Binary-emulation"><span class="toc-number">1.1.1.</span> <span class="toc-text">Binary emulation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Shellcode-emulation"><span class="toc-number">1.1.2.</span> <span class="toc-text">Shellcode emulation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Common-Qiling-initialization-options"><span class="toc-number">1.1.3.</span> <span class="toc-text">Common Qiling initialization options</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Setup-2"><span class="toc-number">1.2.</span> <span class="toc-text">Setup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Execution"><span class="toc-number">1.3.</span> <span class="toc-text">Execution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qltool"><span class="toc-number">2.</span> <span class="toc-text">Qltool</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Emulation"><span class="toc-number">2.1.</span> <span class="toc-text">Emulation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Run-Options"><span class="toc-number">2.1.1.</span> <span class="toc-text">Run Options</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Code-Options"><span class="toc-number">2.1.2.</span> <span class="toc-text">Code Options</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Common-Options"><span class="toc-number">2.1.3.</span> <span class="toc-text">Common Options</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#qltui"><span class="toc-number">2.2.</span> <span class="toc-text">qltui</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Examples"><span class="toc-number">2.3.</span> <span class="toc-text">Examples</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#shellcode"><span class="toc-number">2.3.1.</span> <span class="toc-text">shellcode</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UEFI-file"><span class="toc-number">2.3.2.</span> <span class="toc-text">UEFI file</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#GDB-debugger-enable"><span class="toc-number">2.3.3.</span> <span class="toc-text">GDB debugger enable</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Binary-file-and-argv"><span class="toc-number">2.3.4.</span> <span class="toc-text">Binary file and argv</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Binary-file-and-various-output-format"><span class="toc-number">2.3.5.</span> <span class="toc-text">Binary file and various output format</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Binary-file-and-env"><span class="toc-number">2.3.6.</span> <span class="toc-text">Binary file and env</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#qltui-2"><span class="toc-number">2.3.7.</span> <span class="toc-text">qltui</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&text=qiling框架初探"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&is_video=false&description=qiling框架初探"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=qiling框架初探&body=Check out this article: http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&title=qiling框架初探"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&name=qiling框架初探&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://orch1d.icu/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/&t=qiling框架初探"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+      
+        
+          2023-2024
+            Orchid
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+      -->
+          <li><a href="/">
+              首页
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/archives/">
+              归档
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/categories/">
+              分类
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/about/">
+              关于
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/friends/">
+              朋友
+            </a></li><!--
+    -->
+          
+      </ul>
+      <ul>
+        
+          <!-- 不蒜子统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次
+          </span>
+          <span class="post-meta-divider">|</span>
+          <span id="busuanzi_container_site_uv" style='display:none'>
+            本站访客数<span id="busuanzi_value_site_uv"></span>人
+          </span>
+          <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+          
+      </ul>
+    </nav>
+  </div>
+  <div class="beian">
+    <p><a href="http://www.beian.miit.gov.cn" target="_blank">蜀ICP备2024070653号-1</a></p>
+  </div>
+
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?f22c96bf057548e4ed458eb09ecec637";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
