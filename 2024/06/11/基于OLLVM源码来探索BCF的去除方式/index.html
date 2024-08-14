@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="前言· 作为十分常见的混淆项目，OLLVM主要拥有四个Pass，分别是Substitution、Flattening、Split和BogusControlFlow。 其中虚假控制流（BogusControlFlow）是一个比较容易去除的混淆。先前我已经试着用过Angr分析程序的控制流，找到没有被执行的基本块并Nop，今天我们来探索下其他的去除方式。 源码分析· 根据我的理解，BCF主要分为两步，首">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于OLLVM源码来探索BCF的去除方式">
+<meta property="og:url" content="http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/index.html">
+<meta property="og:site_name" content="Orchid&#39;s Blog">
+<meta property="og:description" content="前言· 作为十分常见的混淆项目，OLLVM主要拥有四个Pass，分别是Substitution、Flattening、Split和BogusControlFlow。 其中虚假控制流（BogusControlFlow）是一个比较容易去除的混淆。先前我已经试着用过Angr分析程序的控制流，找到没有被执行的基本块并Nop，今天我们来探索下其他的去除方式。 源码分析· 根据我的理解，BCF主要分为两步，首">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/20240814155252.png">
+<meta property="article:published_time" content="2024-06-11T03:52:15.000Z">
+<meta property="article:modified_time" content="2024-08-14T11:13:45.431Z">
+<meta property="article:author" content="Orchid">
+<meta property="article:tag" content="Reverse">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/20240814155252.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/bochii.png">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/bochii.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/bochii.png">
+        
+      
+    
+    <!-- title -->
+    <title>基于OLLVM源码来探索BCF的去除方式</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/categories/">分类</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/friends/">朋友</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2024/07/06/qiling%E6%A1%86%E6%9E%B6%E5%88%9D%E6%8E%A2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2024/05/05/doing-idapython%E7%94%A8%E6%B3%95/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&text=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&is_video=false&description=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=基于OLLVM源码来探索BCF的去除方式&body=Check out this article: http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&name=基于OLLVM源码来探索BCF的去除方式&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&t=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E6%8C%87%E4%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">垃圾指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B0%B8%E7%9C%9F%E8%B7%B3%E8%BD%AC"><span class="toc-number">2.2.</span> <span class="toc-text">永真跳转</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%BB%E9%99%A4BCF"><span class="toc-number">3.</span> <span class="toc-text">去除BCF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IDAPython"><span class="toc-number">3.1.</span> <span class="toc-text">IDAPython</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9-bss%E6%AE%B5%E6%95%B0%E6%8D%AE%E4%B8%8E%E6%AE%B5%E5%B1%9E%E6%80%A7"><span class="toc-number">3.2.</span> <span class="toc-text">修改.bss段数据与段属性</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        基于OLLVM源码来探索BCF的去除方式
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Orchid</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-06-11T03:52:15.000Z" class="dt-published" itemprop="datePublished">2024-06-11</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Reverse/" rel="tag">Reverse</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="前言">前言<a class="anchor" href="#前言">·</a></h2>
+<p>作为十分常见的混淆项目，<code>OLLVM</code>主要拥有四个<code>Pass</code>，分别是<code>Substitution</code>、<code>Flattening</code>、<code>Split</code>和<code>BogusControlFlow</code>。</p>
+<p>其中虚假控制流（<code>BogusControlFlow</code>）是一个比较容易去除的混淆。先前我已经试着用过<code>Angr</code>分析程序的控制流，找到没有被执行的基本块并<code>Nop</code>，今天我们来探索下其他的去除方式。</p>
+<h2 id="源码分析">源码分析<a class="anchor" href="#源码分析">·</a></h2>
+<p>根据我的理解，<code>BCF</code>主要分为两步，首先产生垃圾指令（不可达的基本块），再通过不透明谓词构成的永真式，将垃圾代码插入程序并混淆控制流。</p>
+<h3 id="垃圾指令">垃圾指令<a class="anchor" href="#垃圾指令">·</a></h3>
+<p>这方面不太重要，毕竟我们都要去除。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建虚假块</span></span><br><span class="line">Twine * var3 = <span class="keyword">new</span> <span class="built_in">Twine</span>(<span class="string">&quot;alteredBB&quot;</span>);</span><br><span class="line">BasicBlock *alteredBB = <span class="built_in">createAlteredBasicBlock</span>(originalBB, *var3, &amp;F);</span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="comment">// 在alteredBB中填充垃圾指令</span></span><br><span class="line"><span class="keyword">for</span> (BasicBlock::iterator i = alteredBB-&gt;<span class="built_in">begin</span>(), e = alteredBB-&gt;<span class="built_in">end</span>(); i != e; ++i)</span><br><span class="line">&#123;</span><br><span class="line"> <span class="keyword">if</span> (i-&gt;<span class="built_in">isBinaryOp</span>())</span><br><span class="line"> &#123;</span><br><span class="line">  <span class="type">unsigned</span> opcode = i-&gt;<span class="built_in">getOpcode</span>();</span><br><span class="line">  BinaryOperator *op, *op1 = <span class="literal">NULL</span>;</span><br><span class="line">  Twine *var = <span class="keyword">new</span> <span class="built_in">Twine</span>(<span class="string">&quot;_&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (opcode == Instruction::Add || opcode == Instruction::Sub ||</span><br><span class="line">   opcode == Instruction::Mul || opcode == Instruction::UDiv ||</span><br><span class="line">   opcode == Instruction::SDiv || opcode == Instruction::URem ||</span><br><span class="line">   opcode == Instruction::SRem || opcode == Instruction::Shl ||</span><br><span class="line">   opcode == Instruction::LShr || opcode == Instruction::AShr ||</span><br><span class="line">   opcode == Instruction::And || opcode == Instruction::Or ||</span><br><span class="line">   opcode == Instruction::Xor)</span><br><span class="line">  &#123;</span><br><span class="line">   <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (opcode == Instruction::FAdd || opcode == Instruction::FSub ||</span><br><span class="line">   opcode == Instruction::FMul || opcode == Instruction::FDiv ||</span><br><span class="line">   opcode == Instruction::FRem)</span><br><span class="line">  &#123;</span><br><span class="line">   <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (opcode == Instruction::ICmp)</span><br><span class="line">  &#123; </span><br><span class="line">   <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (opcode == Instruction::FCmp)</span><br><span class="line">  &#123; </span><br><span class="line">   <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> alteredBB;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="永真跳转">永真跳转<a class="anchor" href="#永真跳转">·</a></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个永真的FCmp指令，将originalBB放在True跳转那方（意味着alteredBB永远不会执行）</span></span><br><span class="line"><span class="comment">// 再将alteredBB控制流指向originalBB，混淆控制流</span></span><br><span class="line">Twine * var4 = <span class="keyword">new</span> <span class="built_in">Twine</span>(<span class="string">&quot;condition&quot;</span>);</span><br><span class="line">FCmpInst * condition = <span class="keyword">new</span> <span class="built_in">FCmpInst</span>(*basicBlock, FCmpInst::FCMP_TRUE , LHS, RHS, *var4);</span><br><span class="line"></span><br><span class="line">BranchInst::<span class="built_in">Create</span>(originalBB, alteredBB, (Value *)condition, basicBlock);</span><br><span class="line"></span><br><span class="line">BranchInst::<span class="built_in">Create</span>(originalBB, alteredBB);</span><br><span class="line"></span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="comment">// 再创建一个永真的FCmp指令，利用Split将originalBB分割为两部分，将True和False跳转分别指向正常的程序流和alteredBB</span></span><br><span class="line">BasicBlock::iterator i = originalBB-&gt;<span class="built_in">end</span>();</span><br><span class="line">Twine * var5 = <span class="keyword">new</span> <span class="built_in">Twine</span>(<span class="string">&quot;originalBBpart2&quot;</span>);</span><br><span class="line">BasicBlock * originalBBpart2 = originalBB-&gt;<span class="built_in">splitBasicBlock</span>(--i , *var5);</span><br><span class="line"></span><br><span class="line">originalBB-&gt;<span class="built_in">getTerminator</span>()-&gt;<span class="built_in">eraseFromParent</span>();</span><br><span class="line"></span><br><span class="line">Twine * var6 = <span class="keyword">new</span> <span class="built_in">Twine</span>(<span class="string">&quot;condition2&quot;</span>);</span><br><span class="line">FCmpInst * condition2 = <span class="keyword">new</span> <span class="built_in">FCmpInst</span>(*originalBB, CmpInst::FCMP_TRUE , LHS, RHS, *var6);</span><br><span class="line"></span><br><span class="line">BranchInst::<span class="built_in">Create</span>(originalBBpart2, alteredBB, (Value *)condition2, originalBB);</span><br><span class="line"></span><br><span class="line"><span class="comment">// -------------------</span></span><br><span class="line"><span class="comment">// 接下来是利用不透明谓词混淆永真式的部分</span></span><br><span class="line"><span class="comment">// 创建不透明谓词x, y</span></span><br><span class="line">Twine *varX = <span class="keyword">new</span> <span class="built_in">Twine</span>(<span class="string">&quot;x&quot;</span>);</span><br><span class="line">Twine *varY = <span class="keyword">new</span> <span class="built_in">Twine</span>(<span class="string">&quot;y&quot;</span>);</span><br><span class="line">Value *x1 = ConstantInt::<span class="built_in">get</span>(Type::<span class="built_in">getInt32Ty</span>(M.<span class="built_in">getContext</span>()), <span class="number">0</span>, <span class="literal">false</span>);</span><br><span class="line">Value *y1 = ConstantInt::<span class="built_in">get</span>(Type::<span class="built_in">getInt32Ty</span>(M.<span class="built_in">getContext</span>()), <span class="number">0</span>, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 遍历函数，寻找永真的分支指令</span></span><br><span class="line"><span class="keyword">for</span> (Module::iterator mi = M.<span class="built_in">begin</span>(), me = M.<span class="built_in">end</span>(); mi != me; ++mi)</span><br><span class="line">&#123;</span><br><span class="line"> <span class="keyword">for</span> (Function::iterator fi = mi-&gt;<span class="built_in">begin</span>(), fe = mi-&gt;<span class="built_in">end</span>(); fi != fe; ++fi)</span><br><span class="line"> &#123;</span><br><span class="line">  <span class="comment">// fi-&gt;setName(&quot;&quot;);</span></span><br><span class="line">  TerminatorInst *tbb = fi-&gt;<span class="built_in">getTerminator</span>();</span><br><span class="line">  <span class="keyword">if</span> (tbb-&gt;<span class="built_in">getOpcode</span>() == Instruction::Br)</span><br><span class="line">  &#123;</span><br><span class="line">   <span class="comment">// ...</span></span><br><span class="line">   <span class="comment">// 找到永真式，分别加入toDelete和toEdit中</span></span><br><span class="line">   <span class="keyword">if</span> (cond-&gt;<span class="built_in">getPredicate</span>() == FCmpInst::FCMP_TRUE)</span><br><span class="line">   &#123;</span><br><span class="line">    toDelete.<span class="built_in">push_back</span>(cond);</span><br><span class="line">    toEdit.<span class="built_in">push_back</span>(tbb);</span><br><span class="line">   &#125;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 处理之前找到的toEdit，转换为if y &lt; 10 || x*(x+1) % 2 == 0</span></span><br><span class="line"><span class="keyword">for</span> (std::vector&lt;Instruction *&gt;::iterator i = toEdit.<span class="built_in">begin</span>(); i != toEdit.<span class="built_in">end</span>(); ++i)</span><br><span class="line">&#123;</span><br><span class="line"> opX = <span class="keyword">new</span> <span class="built_in">LoadInst</span>((Value *)x, <span class="string">&quot;&quot;</span>, (*i));</span><br><span class="line"> opY = <span class="keyword">new</span> <span class="built_in">LoadInst</span>((Value *)y, <span class="string">&quot;&quot;</span>, (*i));</span><br><span class="line"></span><br><span class="line"> op = BinaryOperator::<span class="built_in">Create</span>(Instruction::Sub, (Value *)opX,</span><br><span class="line">        ConstantInt::<span class="built_in">get</span>(Type::<span class="built_in">getInt32Ty</span>(M.<span class="built_in">getContext</span>()), <span class="number">1</span>,</span><br><span class="line">             <span class="literal">false</span>),</span><br><span class="line">        <span class="string">&quot;&quot;</span>, (*i));</span><br><span class="line"> op1 = BinaryOperator::<span class="built_in">Create</span>(Instruction::Mul, (Value *)opX, op, <span class="string">&quot;&quot;</span>, (*i));</span><br><span class="line"> op = BinaryOperator::<span class="built_in">Create</span>(Instruction::URem, op1,</span><br><span class="line">        ConstantInt::<span class="built_in">get</span>(Type::<span class="built_in">getInt32Ty</span>(M.<span class="built_in">getContext</span>()), <span class="number">2</span>,</span><br><span class="line">             <span class="literal">false</span>),</span><br><span class="line">        <span class="string">&quot;&quot;</span>, (*i));</span><br><span class="line"> condition = <span class="keyword">new</span> <span class="built_in">ICmpInst</span>((*i), ICmpInst::ICMP_EQ, op,</span><br><span class="line">        ConstantInt::<span class="built_in">get</span>(Type::<span class="built_in">getInt32Ty</span>(M.<span class="built_in">getContext</span>()), <span class="number">0</span>,</span><br><span class="line">             <span class="literal">false</span>));</span><br><span class="line"> condition2 = <span class="keyword">new</span> <span class="built_in">ICmpInst</span>((*i), ICmpInst::ICMP_SLT, opY,</span><br><span class="line">         ConstantInt::<span class="built_in">get</span>(Type::<span class="built_in">getInt32Ty</span>(M.<span class="built_in">getContext</span>()), <span class="number">10</span>,</span><br><span class="line">              <span class="literal">false</span>));</span><br><span class="line"> op1 = BinaryOperator::<span class="built_in">Create</span>(Instruction::Or, (Value *)condition,</span><br><span class="line">         (Value *)condition2, <span class="string">&quot;&quot;</span>, (*i));</span><br><span class="line"></span><br><span class="line"> BranchInst::<span class="built_in">Create</span>(((BranchInst *)*i)-&gt;<span class="built_in">getSuccessor</span>(<span class="number">0</span>),</span><br><span class="line">        ((BranchInst *)*i)-&gt;<span class="built_in">getSuccessor</span>(<span class="number">1</span>), (Value *)op1,</span><br><span class="line">        ((BranchInst *)*i)-&gt;<span class="built_in">getParent</span>());</span><br><span class="line"> (*i)-&gt;<span class="built_in">eraseFromParent</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="去除BCF">去除BCF<a class="anchor" href="#去除BCF">·</a></h2>
+<p>分析程序，我们已经找到了问题的关键，就是<code>y&lt;10||x*(x+1)%2==0</code>这个永真表达式，因为反编译程序不能预测不透明变量的值，所以就不敢擅自去除虚假控制流。</p>
+<p>所以除了用Angr找到不可达的基本块，我们还可以给反编译程序足够的信息，来让他自动去除BCF。</p>
+<h3 id="IDAPython">IDAPython<a class="anchor" href="#IDAPython">·</a></h3>
+<p><img src="https://cdn.jsdelivr.net/gh/worchid39/image_host@main/blog_images/20240814155252.png" alt="fake_jmp"></p>
+<p>既然我们知道这个条件跳转是永真的，那么我们可以直接patch，将<code>mov eax, [rbp+var_xxx]</code>替换成一个具体的值，比如<code>mov eax, 0</code>，这样IDA就能自动计算并去除BCF。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> ida_xref</span><br><span class="line"><span class="keyword">import</span> ida_idaapi</span><br><span class="line"><span class="keyword">from</span> ida_bytes <span class="keyword">import</span> get_bytes, patch_bytes</span><br><span class="line"><span class="keyword">import</span> ida_segment</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">do_patch</span>(<span class="params">ea</span>):</span><br><span class="line">    instruction = get_bytes(ea, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">if</span> instruction == <span class="string">b&quot;\x8B&quot;</span>:</span><br><span class="line">        reg = (get_bytes(ea + <span class="number">1</span>, <span class="number">1</span>)[<span class="number">0</span>] &amp; <span class="number">0b00111000</span>) &gt;&gt; <span class="number">3</span></span><br><span class="line">        new_bytes = (<span class="number">0xB8</span> + reg).to_bytes(<span class="number">1</span>, <span class="string">&#x27;little&#x27;</span>) + <span class="string">b&#x27;\x00\x00\x00\x00\x90\x90&#x27;</span></span><br><span class="line">        patch_bytes(ea, new_bytes)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;[+] Patched at <span class="subst">&#123;<span class="built_in">hex</span>(ea)&#125;</span>: <span class="subst">&#123;new_bytes.<span class="built_in">hex</span>()&#125;</span>&#x27;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;[!] Unsupported instruction at <span class="subst">&#123;<span class="built_in">hex</span>(ea)&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line">seg = ida_segment.get_segm_by_name(<span class="string">&#x27;.bss&#x27;</span>)</span><br><span class="line"><span class="keyword">if</span> seg:</span><br><span class="line">    start = seg.start_ea</span><br><span class="line">    end = seg.end_ea</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> addr <span class="keyword">in</span> <span class="built_in">range</span>(start, end, <span class="number">4</span>):</span><br><span class="line">        ref = ida_xref.get_first_dref_to(addr)</span><br><span class="line">        <span class="keyword">while</span> ref != ida_idaapi.BADADDR:</span><br><span class="line">            do_patch(ref)</span><br><span class="line">            ref = ida_xref.get_next_dref_to(addr, ref)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;[!] .bss segment not found&#x27;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="修改-bss段数据与段属性">修改.bss段数据与段属性<a class="anchor" href="#修改-bss段数据与段属性">·</a></h3>
+<p>我们可以直接在<code>.bss</code>修改数据，并修改为只读，这样IDA也可以自动识别永真式来去除虚假控制流。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> ida_segment</span><br><span class="line"><span class="keyword">import</span> ida_bytes</span><br><span class="line"></span><br><span class="line">seg = ida_segment.get_segm_by_name(<span class="string">&#x27;.bss&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> seg:</span><br><span class="line">    <span class="keyword">for</span> ea <span class="keyword">in</span> <span class="built_in">range</span>(seg.start_ea, seg.end_ea, <span class="number">4</span>):</span><br><span class="line">    ida_bytes.patch_bytes(ea, <span class="built_in">int</span>(<span class="number">0</span>).to_bytes(<span class="number">4</span>, <span class="string">&#x27;little&#x27;</span>))</span><br><span class="line"></span><br><span class="line">    seg.perm = <span class="number">4</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;[!] .bss segment not found&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/categories/">分类</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/friends/">朋友</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E6%8C%87%E4%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">垃圾指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B0%B8%E7%9C%9F%E8%B7%B3%E8%BD%AC"><span class="toc-number">2.2.</span> <span class="toc-text">永真跳转</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%BB%E9%99%A4BCF"><span class="toc-number">3.</span> <span class="toc-text">去除BCF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IDAPython"><span class="toc-number">3.1.</span> <span class="toc-text">IDAPython</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9-bss%E6%AE%B5%E6%95%B0%E6%8D%AE%E4%B8%8E%E6%AE%B5%E5%B1%9E%E6%80%A7"><span class="toc-number">3.2.</span> <span class="toc-text">修改.bss段数据与段属性</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&text=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&is_video=false&description=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=基于OLLVM源码来探索BCF的去除方式&body=Check out this article: http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&title=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&name=基于OLLVM源码来探索BCF的去除方式&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://orch1d.icu/2024/06/11/%E5%9F%BA%E4%BA%8EOLLVM%E6%BA%90%E7%A0%81%E6%9D%A5%E6%8E%A2%E7%B4%A2BCF%E7%9A%84%E5%8E%BB%E9%99%A4%E6%96%B9%E5%BC%8F/&t=基于OLLVM源码来探索BCF的去除方式"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+      
+        
+          2023-2024
+            Orchid
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+      -->
+          <li><a href="/">
+              首页
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/archives/">
+              归档
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/categories/">
+              分类
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/about/">
+              关于
+            </a></li><!--
+    -->
+          <!--
+      -->
+          <li><a href="/friends/">
+              朋友
+            </a></li><!--
+    -->
+          
+      </ul>
+      <ul>
+        
+          <!-- 不蒜子统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次
+          </span>
+          <span class="post-meta-divider">|</span>
+          <span id="busuanzi_container_site_uv" style='display:none'>
+            本站访客数<span id="busuanzi_value_site_uv"></span>人
+          </span>
+          <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+          
+      </ul>
+    </nav>
+  </div>
+  <div class="beian">
+    <p><a href="http://www.beian.miit.gov.cn" target="_blank">蜀ICP备2024070653号-1</a></p>
+  </div>
+
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?f22c96bf057548e4ed458eb09ecec637";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
